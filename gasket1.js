@@ -3,7 +3,7 @@
 var gl;
 var points;
 
-var NumPoints = 5000;
+var NumTimesToSubdivide = 4;
 
 window.onload = function init() {
 	var canvas = document.getElementById("gl-canvas");
@@ -14,34 +14,11 @@ window.onload = function init() {
 	}
 
 	//
-	//  Initialize our data for the Sierpinski Gasket
+	//  Initialize our data for the Sierpinski Carpet
 	//
 
-	// First, initialize the corners of our gasket with three points.
-
-	var vertices = [vec2(-1, -1), vec2(0, 1), vec2(1, -1)];
-
-	// Specify a starting point p for our iterations
-	// p must lie inside any set of three vertices
-
-	var u = add(vertices[0], vertices[1]);
-	var v = add(vertices[0], vertices[2]);
-	var p = scale(0.25, add(u, v));
-
-	// And, add our initial point into our array of points
-
-	points = [p];
-
-	// Compute new points
-	// Each new point is located midway between
-	// last point and a randomly chosen vertex
-
-	for (var i = 0; points.length < NumPoints; ++i) {
-		var j = Math.floor(Math.random() * 3);
-		p = add(points[i], vertices[j]);
-		p = scale(0.5, p);
-		points.push(p);
-	}
+	points = [];
+	divideSquare(-1.0, -1.0, 2.0, NumTimesToSubdivide);
 
 	//
 	//  Configure WebGL
@@ -68,6 +45,40 @@ window.onload = function init() {
 
 	render();
 };
+
+function divideSquare(x, y, size, count) {
+	if (count === 0) {
+		square(x, y, size);
+		return;
+	}
+
+	var newSize = size / 3.0;
+
+	for (var row = 0; row < 3; row++) {
+		for (var col = 0; col < 3; col++) {
+			if (row === 1 && col === 1) {
+				continue;
+			}
+
+			divideSquare(x + col * newSize, y + row * newSize, newSize, count - 1);
+		}
+	}
+}
+
+function square(x, y, size) {
+	var a = vec2(x, y);
+	var b = vec2(x + size, y);
+	var c = vec2(x + size, y + size);
+	var d = vec2(x, y + size);
+
+	points.push(a);
+	points.push(b);
+	points.push(c);
+
+	points.push(a);
+	points.push(c);
+	points.push(d);
+}
 
 function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
