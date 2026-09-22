@@ -3,6 +3,7 @@
 var gl;
 var points;
 var bufferId;
+var colorLoc;
 
 var NumTimesToSubdivide = 4;
 
@@ -32,6 +33,9 @@ window.onload = function init() {
 	var program = initShaders(gl, "vertex-shader", "fragment-shader");
 	gl.useProgram(program);
 
+	colorLoc = gl.getUniformLocation(program, "uColor");
+	gl.uniform4f(colorLoc, 1.0, 0.0, 0.0, 1.0);
+
 	// Load the data into the GPU
 
 	bufferId = gl.createBuffer();
@@ -51,6 +55,18 @@ window.onload = function init() {
 			NumTimesToSubdivide;
 
 		updateCarpet();
+	};
+
+	document.getElementById("color-picker").oninput = function (event) {
+		var color = event.target.value;
+
+		var r = parseInt(color.substring(1, 3), 16) / 255.0;
+		var g = parseInt(color.substring(3, 5), 16) / 255.0;
+		var b = parseInt(color.substring(5, 7), 16) / 255.0;
+
+		gl.uniform4f(colorLoc, r, g, b, 1.0);
+
+		render();
 	};
 
 	render();
