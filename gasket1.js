@@ -2,6 +2,7 @@
 
 var gl;
 var points;
+var bufferId;
 
 var NumTimesToSubdivide = 4;
 
@@ -33,7 +34,7 @@ window.onload = function init() {
 
 	// Load the data into the GPU
 
-	var bufferId = gl.createBuffer();
+	bufferId = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
 	gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
 
@@ -42,6 +43,15 @@ window.onload = function init() {
 	var vPosition = gl.getAttribLocation(program, "vPosition");
 	gl.vertexAttribPointer(vPosition, 2, gl.FLOAT, false, 0, 0);
 	gl.enableVertexAttribArray(vPosition);
+
+	document.getElementById("subdivision-slider").oninput = function (event) {
+		NumTimesToSubdivide = Number(event.target.value);
+
+		document.getElementById("subdivision-value").textContent =
+			NumTimesToSubdivide;
+
+		updateCarpet();
+	};
 
 	render();
 };
@@ -80,7 +90,18 @@ function square(x, y, size) {
 	points.push(d);
 }
 
+function updateCarpet() {
+	points = [];
+
+	divideSquare(-1.0, -1.0, 2.0, NumTimesToSubdivide);
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
+	gl.bufferData(gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW);
+
+	render();
+}
+
 function render() {
 	gl.clear(gl.COLOR_BUFFER_BIT);
-	gl.drawArrays(gl.POINTS, 0, points.length);
+	gl.drawArrays(gl.TRIANGLES, 0, points.length);
 }
